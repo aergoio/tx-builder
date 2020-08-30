@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "~*": ["./*"]
+    },
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "downlevelIteration": true
+  },
+  "include": ["src/**/*"]
+}

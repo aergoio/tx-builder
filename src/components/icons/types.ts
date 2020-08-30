@@ -1,8 +1,11 @@
 export const iconNames = [
+  'aergo',
+  'aergo-light',
   'arrow',
   'checkmark',
   'danger',
-  'logo',
+  'checkmark-circle',
+  'danger-circle',
   'net',
 ] as const;
 

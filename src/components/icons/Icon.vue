@@ -32,9 +32,6 @@ export default Vue.extend({
       return icons[this.name];
     },
   },
-  components: {
-    ...icons,
-  },
 });
 </script>
 

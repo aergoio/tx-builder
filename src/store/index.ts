@@ -110,7 +110,11 @@ export default new Vuex.Store<State>({
     },
     async queryContract(_used, { address, abi, method, args }) {
       const contract = Contract.fromAbi(abi).setAddress(address);
-      return await timedAsync(aergo.queryContract(contract.functions[method](...args)));
+      try {
+        return await timedAsync(aergo.queryContract(contract.functions[method](...args)));
+      } catch(e) {
+        return { error: `${e}` };
+      }
     }
   }
 });

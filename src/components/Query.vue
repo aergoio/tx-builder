@@ -21,7 +21,7 @@
           </div>
         </fieldset>
         <fieldset>
-          <div class="btn-big primary" @click="query">Query</div>
+          <Button type="primary" @click="query">Query</Button>
         </fieldset>
       </form>
     </div>
@@ -49,52 +49,10 @@ import JsonView from '../components/JsonView.vue';
 import { TxTypes, Amount, Address, encodeBuffer } from '@herajs/common';
 import { Contract } from '@herajs/client';
 import { Icon, LoadingIndicator } from './icons/';
+import { Button } from './buttons/';
 
-const normalActions = ['normal', 'transfer', 'call', 'feeDelegation', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
-const dposActions = ['stake', 'unstake', 'vote', 'voteDAO'] as const;
-const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'addConfig', 'enableConfig', 'removeConfig'] as const;
-const actions = [...normalActions, ...dposActions, ...raftActions] as const;
-type Action = typeof actions[number];
-
-const defaultTxBody = {
-  type: 0,
-  from: "",
-  to: "",
-  amount: "0 aergo",
-  limit: 0,
-};
-
-function aergoConnectCall(action, responseType, data): Promise<any> {
-  return new Promise((resolve, reject) => {
-    window.addEventListener(responseType, function(event) {
-      if ('error' in event.detail) {
-        reject(event.detail.error);
-      } else {
-        resolve(event.detail);
-      }
-    }, { once: true });
-    window.postMessage({
-      type: 'AERGO_REQUEST',
-      action: action,
-      data: data,
-    }, '*');
-  });
-}
-async function requestSignTx(data) {
-  const result = await aergoConnectCall('SIGN_TX', 'AERGO_SIGN_TX_RESULT', data);
-  return result.signature;
-}
-async function requestSendTx(data) {
-  const result = await aergoConnectCall('SEND_TX', 'AERGO_SEND_TX_RESULT', data);
-  return result.hash;
-}
-
-@Component({ components: { JsonView, LoadingIndicator, Icon, }})
-export default class BuilderView extends Vue {
-  action: Action = 'normal';
-  dposActions = dposActions;
-  raftActions = raftActions;
-
+@Component({ components: { JsonView, LoadingIndicator, Icon, Button, }})
+export default class QueryView extends Vue {
   contractMethod = null;
   contractArgs = {};
   result = null;

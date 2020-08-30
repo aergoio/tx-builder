@@ -13,6 +13,7 @@ interface State {
   activeAccount: Record<string, any>;
   chainInfo: Record<string, any>;
   chainId: string;
+  chainError: string;
   contract: {
     address: any;
     abi: any;
@@ -26,6 +27,7 @@ export default new Vuex.Store<State>({
     activeAccount: {},
     chainInfo: {},
     chainId: '',
+    chainError: '',
     contract: {
       address: null,
       abi: null,
@@ -36,6 +38,9 @@ export default new Vuex.Store<State>({
     setChain(state, { chainId, chainInfo }) {
       state.chainInfo = chainInfo;
       state.chainId = chainId;
+    },
+    setChainError(state, error) {
+      state.chainError = error;
     },
     setActiveAccount(state, account) {
       state.activeAccount = account;
@@ -88,10 +93,17 @@ export default new Vuex.Store<State>({
         return false;
       }
     },
-    async setChain({ commit }, { chainId, nodeUrl }) {
-      aergo = new AergoClient({}, new GrpcWebProvider({url: nodeUrl}));
-      const chainInfo = await aergo.getChainInfo();
-      commit('setChain', { chainId, chainInfo });
+    async setChain({ commit }, { nodeUrl }) {
+      commit('setChainError', '');
+      try {
+        aergo = new AergoClient({}, new GrpcWebProvider({url: nodeUrl}));
+        const chainInfo = await aergo.getChainInfo();
+        const chainId = chainInfo.chainid.magic;
+        commit('setChain', { chainId, chainInfo });
+      } catch(e) {
+        console.error(e);
+        commit('setChainError', `${e}`);
+      }
     },
     async getReceipt(_unused, { hash }) {
       return await aergo.waitForTransactionReceipt(hash);

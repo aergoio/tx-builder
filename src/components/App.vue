@@ -10,7 +10,7 @@ import Component from 'vue-class-component';
 @Component
 export default class App extends Vue {
   mounted() {
-    this.$store.dispatch('setChain', { chainId: 'testnet.aergo.io', nodeUrl: 'https://testnet-api-http.aergo.io' });
+    this.$store.dispatch('setChain', { nodeUrl: 'https://testnet-api-http.aergo.io' });
     if (this.$route.params.address) {
       this.$store.dispatch('setContractAddress', { address: `${this.$route.params.address}` });
     }

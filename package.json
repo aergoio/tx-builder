@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@herajs/client": "^0.20.3",
-    "@herajs/common": "^0.20.0",
+    "@herajs/client": "^0.21.0",
+    "@herajs/common": "^0.21.0",
     "monaco-editor": "^0.20.0",
     "timed-async": "^0.3.1",
     "vue": "^2.6.12",

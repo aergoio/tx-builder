@@ -1,12 +1,12 @@
 <template lang="html">
-  <div class="network-selector">
+  <div class="network-selector" @click="selectNetwork">
     <Icon name="net" :size=20></Icon>
     <span class="chain-id">{{chainId}}</span>
     <span class="status" :class="`status-${status}`">
-      <Icon name="checkmark" :size=20 v-show="status == 'connected'"></Icon>
-      <Icon name="danger" :size=20 v-show="status == 'error'"></Icon>
-      <span class="consensus-name" v-show="status == 'connected'">{{consensusName}}</span>
-      <span class="consensus-name" v-show="status == 'error'">Connection failed</span>
+      <Icon name="checkmark" :size=20 v-show="consensus && !chainError"></Icon>
+      <Icon name="danger" :size=20 v-show="chainError"></Icon>
+      <span class="consensus-name" v-show="consensus && !chainError">{{consensus}}</span>
+      <span class="consensus-name" v-show="chainError" :title="chainError">Connection failed</span>
       <span class="consensus-name" v-show="status == 'connecting'">Connecting...</span>
     </span>
   </div>
@@ -21,11 +21,33 @@ type ConnectionStatus = 'connecting' | 'connected' | 'error';
 
 @Component({ components: { Icon, }})
 export default class NetworkSelector extends Vue {
-  chainId = 'testnet.aergo.io';
-  consensusName = 'dpos';
-  status: ConnectionStatus = 'connected';
+  get status(): ConnectionStatus {
+    if (this.chainError) {
+      return 'error';
+    }
+    if (this.consensus) {
+      return 'connected';
+    }
+    return 'connecting';
+  }
 
-  // TODO: select network
+  get chainId() {
+    return this.$store.state.chainId;
+  }
+  get chainInfo() {
+    return this.$store.state.chainInfo;
+  }
+  get chainError() {
+    return this.$store.state.chainError;
+  }
+  get consensus() {
+    return this.$store.state.chainInfo?.chainid?.consensus;
+  }
+
+  selectNetwork() {
+    const nodeUrl = prompt('Enter Aergo Node URL');
+    this.$store.dispatch('setChain', { nodeUrl })
+  }
 }
 </script>
 

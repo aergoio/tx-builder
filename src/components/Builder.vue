@@ -5,24 +5,24 @@
         <fieldset>
           <h3>Action</h3>
           <div class="actions">
-            <div class="row">
-              <div class="btn-action" v-for="a in ['normal', 'transfer']" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
-            <div class="row">
-              <div class="btn-action" v-for="a in ['call', 'feeDelegation']" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
-            <div class="row">
-              <div class="btn-action" v-for="a in ['deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
-            <div class="row">
-              <div class="btn-action" v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
-            <div class="row" v-if="consensus === 'dpos'">
-              <div class="btn-action" v-for="a in dposActions" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
-            <div class="row" v-if="consensus === 'raft'">
-              <div class="btn-action" v-for="a in raftActions" :class="{ active: action === a }" @click="action = a">{{a}}</div>
-            </div>
+            <ButtonGroup class="row">
+              <Button v-for="a in ['normal', 'transfer']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
+            </ButtonGroup>
+            <ButtonGroup class="row">
+              <Button v-for="a in ['call', 'feeDelegation']" :class="{ active: action === a }" @click="action = a" :disabled="!contractAbi">{{a}}</Button>
+            </ButtonGroup>
+            <ButtonGroup class="row">
+              <Button v-for="a in ['deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a" :disabled="a === 'redeploy' && !contractAbi">{{a}}</Button>
+            </ButtonGroup>
+            <ButtonGroup class="row">
+              <Button v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
+            </ButtonGroup>
+            <ButtonGroup class="row" v-if="consensus === 'dpos'">
+              <Button v-for="a in dposActions" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
+            </ButtonGroup>
+            <ButtonGroup class="row" v-if="consensus === 'raft'">
+              <Button v-for="a in raftActions" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
+            </ButtonGroup>
           </div>
         </fieldset>
 
@@ -57,18 +57,56 @@
 
         <fieldset v-if="action === 'nameCreate'">
           <h3>Name</h3>
-          <input class="text-input" type="text" v-model="name.name">
+          <input class="text-input" type="text" required v-model="name.name">
         </fieldset>
         <fieldset v-if="action === 'nameUpdate'">
           <h3>Name</h3>
-          <input class="text-input" type="text" v-model="name.name">
+          <input class="text-input" type="text" required v-model="name.name">
           <h3>New owner</h3>
-          <input class="text-input" type="text" v-model="name.owner">
+          <input class="text-input" type="text" required v-model="name.owner">
+        </fieldset>
+        
+        <fieldset v-if="action === 'voteBP'">
+          <h3>List of BPs (comma separated)</h3>
+          <input class="text-input" type="text" required v-model="vote.candidates">
+        </fieldset>
+
+        <fieldset v-if="action === 'voteDAO'">
+          <h3>Vote ID</h3>
+          <input class="text-input" type="text" required v-model="vote.name">
+          <h3>List of candidates (comma separated)</h3>
+          <input class="text-input" type="text" required v-model="vote.candidates">
+        </fieldset>
+
+        <fieldset v-if="action === 'addAdmin' || action === 'removeAdmin'">
+          <h3>Admin address</h3>
+          <input class="text-input" type="text" required v-model="raft.admin">
+        </fieldset>
+
+        <fieldset v-if="action === 'changeCluster'">
+          <h3>Cluster config (JSON)</h3>
+          <input class="text-input" type="text" required v-model="raft.jsonArg">
+          <span>
+            <Icon :size="16" :name="raft.jsonArgValid ? 'checkmark-circle' : 'danger-circle'"></Icon>
+            <span v-if="!raft.jsonArgValid" class="note">Enter valid JSON</span>
+          </span>
+        </fieldset>
+
+        <fieldset v-if="action === 'setConfig' || action === 'removeConfig'">
+          <h3>Config key</h3>
+          <input class="text-input" type="text" required v-model="raft.configName">
+          <h3>Config value</h3>
+          <input class="text-input" type="text" required v-model="raft.jsonArg">
+        </fieldset>
+
+        <fieldset v-if="action === 'enableConfig'">
+          <h3>Config key</h3>
+          <input class="text-input" type="text" required v-model="raft.configName">
         </fieldset>
 
         <fieldset v-if="action === 'deploy' || action === 'redeploy'">
           <h3>Contract Code Payload</h3>
-          <input class="text-input" type="file" @change="handleContractFile" ref="contractCode">
+          <input class="text-input" type="file" required @change="handleContractFile" ref="contractCode">
           <p class="note">Output of `aergolua --payload code.lua`</p>
 
           <h3>Arguments</h3>
@@ -85,23 +123,39 @@
     </div>
     <div>
       <JsonView :data="txBody" @change="editorChanged"></JsonView>
-      <div class="buttons">
-        <div class="btn-big" @click="sign">Sign</div>
-        <div class="btn-big primary" @click="send">Sign & Send</div>
-      </div>
-      <div class="result">
-        <div v-if="receiptStatus === 'loading'">
-          <div class="receipt-status">
-            <LoadingIndicator :size="24"></LoadingIndicator>
-            <span>Waiting for receipt...</span>
+      <div class="json-view-below">
+        <ButtonGroup class="buttons">
+          <Button size="big" @click="sign">Sign</Button>
+          <Button size="big" type="primary" @click="send">Sign & Send</Button>
+        </ButtonGroup>
+        <div class="result">
+          <div v-if="signature">
+            <div class="receipt-status">
+              <Icon :size="24" name="checkmark-circle"></Icon>
+              <span>Signed</span>
+            </div>
+            <pre class="receipt-json" >{{signature}}</pre>
           </div>
-        </div>
-        <div v-if="receiptStatus === 'loaded'" style="padding: 0 20px;">
-          <div class="receipt-status">
-            <Icon :size="24" :name="receipt.status === 'ERROR' ? 'danger-circle' : 'checkmark-circle'"></Icon>
-            <span>{{receipt.status}}</span>
+          <div v-if="receiptStatus === 'loading'">
+            <div class="receipt-status">
+              <LoadingIndicator :size="24"></LoadingIndicator>
+              <span>Waiting for receipt of {{hash}}...</span>
+            </div>
           </div>
-          <pre class="receipt-json" v-if="receipt">{{JSON.stringify(receipt, null, 2)}}</pre>
+          <div v-if="receiptStatus === 'loaded'">
+            <div class="receipt-status">
+              <Icon :size="24" :name="receipt.status === 'ERROR' ? 'danger-circle' : 'checkmark-circle'"></Icon>
+              <span>{{receipt.status}} for {{hash}}</span>
+            </div>
+            <pre class="receipt-json" v-if="receipt">{{JSON.stringify(receipt, null, 2)}}</pre>
+          </div>
+          <div v-if="receiptStatus === 'error'">
+            <div class="receipt-status">
+              <Icon :size="24" name="danger-circle"></Icon>
+              <span>Failed loading receipt for {{hash}}</span>
+            </div>
+            <pre class="receipt-json">idk</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -114,10 +168,11 @@ import JsonView from '../components/JsonView.vue';
 import { TxTypes, Amount, Address, encodeBuffer, decodeToBytes } from '@herajs/common';
 import { Contract } from '@herajs/client';
 import { Icon, LoadingIndicator } from './icons/';
+import { Button, ButtonGroup } from './buttons/';
 
 const normalActions = ['normal', 'transfer', 'call', 'feeDelegation', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
-const dposActions = ['stake', 'unstake', 'vote', 'voteDAO'] as const;
-const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'addConfig', 'enableConfig', 'removeConfig'] as const;
+const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
+const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'setConfig', 'enableConfig', 'removeConfig'] as const;
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
 type Action = typeof actions[number];
 
@@ -158,7 +213,7 @@ async function requestSendTx(data) {
   return result.hash;
 }
 
-@Component({ components: { JsonView, LoadingIndicator, Icon, }})
+@Component({ components: { JsonView, LoadingIndicator, Icon, Button, ButtonGroup, }})
 export default class BuilderView extends Vue {
   action: Action = 'normal';
   dposActions = dposActions;
@@ -176,8 +231,22 @@ export default class BuilderView extends Vue {
     owner: '',
   };
 
+  vote = {
+    candidates: '',
+    name: '',
+  };
+
+  raft = {
+    admin: '',
+    configName: '',
+    jsonArg: '',
+    jsonArgValid: false,
+  }
+
   receiptStatus: '' | 'loading' | 'loaded' | 'error' = '';
   receipt: any;
+  signature = null;
+  hash = null;
 
   updateTxBody(change) {
     this.txBody = {...this.txBody, ...change};
@@ -211,6 +280,9 @@ export default class BuilderView extends Vue {
   }
 
   updateContractCallPayload() {
+    if (!this.contractMethod) {
+      return;
+    }
     const payload = {
       Name: this.contractMethod.name,
       Args: this.contractMethod.arguments.map(arg => this.contractArgs[arg.name]),
@@ -240,6 +312,53 @@ export default class BuilderView extends Vue {
   @Watch('name', { deep: true })
   nameArgsChanged() {
     this.updateNameTxPayload();
+  }
+
+  updateRaftPayload() {
+    if (this.action === 'addAdmin') {
+      this.updateTxBody({ payload_json: { Name: 'appendAdmin', Args: [ this.raft.admin ]}});
+    }
+    else if (this.action === 'removeAdmin') {
+      this.updateTxBody({ payload_json: { Name: 'removeAdmin', Args: [ this.raft.admin ]}});
+    }
+    else if (this.action === 'changeCluster') {
+      try {
+        const parsedJson = JSON.parse(this.raft.jsonArg);
+        this.raft.jsonArgValid = true;
+        this.updateTxBody({ payload_json: { Name: 'changeCluster', Args: [ parsedJson ]}});
+      } catch(e) {
+        this.raft.jsonArgValid = false;
+      }
+    }
+    else if (this.action === 'setConfig') {
+      this.updateTxBody({ payload_json: { Name: 'setConf', Args: [ this.raft.configName, this.raft.jsonArg ]}});
+    }
+    else if (this.action === 'removeConfig') {
+      this.updateTxBody({ payload_json: { Name: 'removeConf', Args: [ this.raft.configName, this.raft.jsonArg ]}});
+    }
+    else if (this.action === 'enableConfig') {
+      this.updateTxBody({ payload_json: { Name: 'enableConf', Args: [ this.raft.configName, true ]}});
+    }
+  }
+
+  @Watch('raft', { deep: true })
+  raftInputChanged() {
+    this.updateRaftPayload();
+  }
+
+  updateVotePayload() {
+    const candidates = this.vote.candidates.split(',');
+    if (this.action === 'voteBP') {
+      this.updateTxBody({ payload_json: { Name: 'v1voteBP', Args: [ ...candidates ]}});
+    }
+    else if (this.action === 'voteDAO') {
+      this.updateTxBody({ payload_json: { Name: 'v1voteDAO', Args: [ this.vote.name, ...candidates ]}});
+    }
+  }
+
+  @Watch('vote', { deep: true })
+  voteArgsChanged() {
+    this.updateVotePayload();
   }
 
   @Watch('action')
@@ -272,7 +391,23 @@ export default class BuilderView extends Vue {
       this.updateNameTxPayload();
     }
     else if (dposActions.indexOf(action as typeof dposActions[number]) !== -1 || raftActions.indexOf(action as typeof raftActions[number]) !== -1) {
-      this.updateTxBody({ type: TxTypes.Governance, to: 'aergo.system' });
+      let payload_json;
+      if (action === 'stake') {
+        payload_json = { Name: 'v1stake' };
+      }
+      else if (action === 'unstake') {
+        payload_json = { Name: 'v1unstake' };
+      }
+      else if (action === 'voteBP') {
+        payload_json = { Name: 'v1voteBP', Args: [] };
+      }
+      else if (action === 'voteDAO') {
+        payload_json = { Name: 'v1voteDAO', Args: [] };
+      }
+      this.updateTxBody({ type: TxTypes.Governance, to: 'aergo.system', payload: undefined, payload_json });
+      if (raftActions.indexOf(action as typeof raftActions[number]) !== -1) {
+        this.updateRaftPayload();
+      }
     }
   }
 
@@ -378,22 +513,26 @@ export default class BuilderView extends Vue {
   }
 
   async sign() {
-    const signature = await requestSignTx(this.txBody);
-    alert('signed, signature ' + signature);
+    const formValid = (this.$refs.form as HTMLFormElement).reportValidity();
+    if (!formValid) {
+      return;
+    }
+    this.signature = await requestSignTx(this.txBody);
   }
 
   async send() {
-    const hash = await requestSendTx(this.txBody);
-    alert('sent, hash ' + hash);
+    const formValid = (this.$refs.form as HTMLFormElement).reportValidity();
+    if (!formValid) {
+      return;
+    }
+    this.hash = await requestSendTx(this.txBody);
     this.receiptStatus = 'loading';
     this.receipt = null;
     try {
-      this.receipt = {
-        hash,
-        ...await this.$store.dispatch('getReceipt', { hash }),
-      };
+      this.receipt = await this.$store.dispatch('getReceipt', { hash: this.hash });
       this.receiptStatus = 'loaded';
     } catch(e) {
+      console.log(e);
       this.receiptStatus = 'error';
     }
   }
@@ -464,29 +603,27 @@ fieldset h3:first-of-type {
   &:hover {
     background-color: #343434;
   }
+  &:disabled {
+    cursor: disabled;
+  }
 }
 .actions {
-  .row {
-    display: flex;
+  padding-right: 20px;
+  .button {
+    margin-bottom: 15px;
+  }
+  .row.button-group {
     flex-wrap: wrap;
-    margin-bottom: 0px;
+    > * {
+      flex: 100px 0 0;
+    }
   }
 }
 .arguments {
   margin-left: 20px;
 }
-.btn-big {
-  display: block;
-  background-color: #282828;
-  line-height: 45px;
-  padding: 0 10px;
-  font-size: 1.1em;
-  text-align: center;
-  margin-right: 20px;
-  cursor: pointer;
-  &.primary {
-    background-color: #00C789;
-  }
+.json-view-below {
+  padding: 0 20px;
 }
 .buttons {
   display: flex;
@@ -512,10 +649,11 @@ fieldset h3:first-of-type {
 }
 .receipt-json {
   white-space: pre-wrap;
+  word-break: break-all;
   margin: 20px 0;
   font-size: .9em;
   line-height: 1.3;
   background-color: #282828;
-  padding: 4px;
+  padding: 4px 6px;
 }
 </style>

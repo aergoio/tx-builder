@@ -1,6 +1,6 @@
 <template>
   <div class="contract-address-input">
-    <input type="text" v-model="contractAddress" placeholder="Enter contract address" @keyup="handleContractAddress" />
+    <input type="text" v-model="contractAddress" placeholder="Enter contract address for call, reploy, and query" @keyup="handleContractAddress" />
     <div>
       <Icon name="checkmark-circle" :size=18 v-show="status == 'loaded'"></Icon>
       <Icon name="danger-circle" :size=18 v-show="status == 'error'"></Icon>

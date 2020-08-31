@@ -9,11 +9,8 @@
               <Button v-for="a in ['normal', 'transfer']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
-              <Button v-for="a in ['call', 'feeDelegation']" :class="{ active: action === a }" @click="action = a" :disabled="!contractAbi">{{a}}</Button>
-            </ButtonGroup>
-            <ButtonGroup class="row">
-              <Button v-for="a in ['deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
-                :disabled="a === 'redeploy' && !contractAbi" v-show="a === 'deploy' || consensus === 'raft'">{{a}}</Button>
+              <Button v-for="a in ['call', 'deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
+                :disabled="!(a === 'deploy' || contractAbi)" v-show="a !== 'redeploy' || consensus === 'raft'">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
@@ -37,7 +34,7 @@
             v-model="txBody.amount" :disabled="!canEditAmount">
         </fieldset>
 
-        <fieldset v-if="action === 'call' || action === 'feeDelegation'">
+        <fieldset v-if="action === 'call'">
           <h3>Contract Method</h3>
           <div class="actions">
             <div class="row">
@@ -49,6 +46,13 @@
           </div>
           <h3>Arguments</h3>
           <MethodArgs :method="selectedContractFunction" v-model="contractArgs"></MethodArgs>
+          <h3>Fee delegation</h3>
+          <div class="actions">
+            <div class="row">
+              <div class="btn-action" :class="{ active: !delegateFee }" @click="delegateFee = false">No</div>
+              <div class="btn-action" :class="{ active: delegateFee }" @click="delegateFee = true">Yes</div>
+            </div>
+          </div>
         </fieldset>
 
         <fieldset v-if="action === 'nameCreate'">
@@ -160,7 +164,7 @@ import { Icon, LoadingIndicator } from './icons/';
 import { Button, ButtonGroup } from './buttons/';
 import MethodArgs from './MethodArgs.vue';
 
-const normalActions = ['normal', 'transfer', 'call', 'feeDelegation', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
+const normalActions = ['normal', 'transfer', 'call', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
 const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'setConfig', 'enableConfig', 'removeConfig'] as const;
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
@@ -215,6 +219,7 @@ export default class BuilderView extends Vue {
   contractDeployPayload = null;
   contractDeployArgs = [];
   deployConstructorAbi = null;
+  delegateFee = false;
 
   name = {
     name: '',
@@ -351,6 +356,11 @@ export default class BuilderView extends Vue {
     this.updateVotePayload();
   }
 
+  @Watch('delegateFee')
+  delegateFeeChanged() {
+    this.updateTxBody({ type: this.delegateFee ? TxTypes.FeeDelegation : TxTypes.Call, to: this.contractAddress });
+  }
+
   @Watch('action')
   actionChanged(action: Action) {
     if (action !== 'nameCreate' && action !== 'nameUpdate' && this.txBody.amount === this.namePrice) {
@@ -363,11 +373,7 @@ export default class BuilderView extends Vue {
       this.updateTxBody({ type: TxTypes.Transfer });
     }
     else if (action === 'call') {
-      this.updateTxBody({ type: TxTypes.Call, to: this.contractAddress });
-      this.updateContractCallPayload();
-    }
-    else if (action === 'feeDelegation') {
-      this.updateTxBody({ type: TxTypes.FeeDelegation, to: this.contractAddress });
+      this.updateTxBody({ type: this.delegateFee ? TxTypes.FeeDelegation : TxTypes.Call, to: this.contractAddress });
       this.updateContractCallPayload();
     }
     else if (action === 'deploy') {
@@ -405,8 +411,8 @@ export default class BuilderView extends Vue {
     switch (this.txBody.type) {
       case TxTypes.Normal: this.action = 'normal'; break;
       case TxTypes.Transfer: this.action = 'transfer'; break;
-      case TxTypes.Call: this.action = 'call'; break;
-      case TxTypes.FeeDelegation: this.action = 'feeDelegation'; break;
+      case TxTypes.Call: this.action = 'call'; this.delegateFee = false; break;
+      case TxTypes.FeeDelegation: this.action = 'call'; this.delegateFee = true; break;
       case TxTypes.Deploy: this.action = 'deploy'; break;
       case TxTypes.Redeploy: this.action = 'redeploy'; break;
       case TxTypes.Governance:

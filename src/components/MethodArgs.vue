@@ -2,6 +2,7 @@
   <div v-if="args" class="arguments">
     <MethodArg v-for="arg in args" :key="arg.name" :arg="arg" v-model="valueCopy[arg.idx]" @input="handleInput(arg.idx, $event)"></MethodArg>
   </div>
+  <div v-else>(None)</div>
 </template>
 
 <script lang="ts">

@@ -12,7 +12,8 @@
               <Button v-for="a in ['call', 'feeDelegation']" :class="{ active: action === a }" @click="action = a" :disabled="!contractAbi">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
-              <Button v-for="a in ['deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a" :disabled="a === 'redeploy' && !contractAbi">{{a}}</Button>
+              <Button v-for="a in ['deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
+                :disabled="a === 'redeploy' && !contractAbi" v-show="a === 'deploy' || consensus === 'raft'">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
@@ -106,7 +107,6 @@
 
           <h3>Arguments</h3>
           <MethodArgs :method="deployConstructorAbi" v-model="contractDeployArgs"></MethodArgs>
-          {{contractDeployArgs}}
         </fieldset>
       </form>
     </div>

@@ -124,6 +124,44 @@ p {
 .editor {
   height: 200px;
 }
+.json-valid {
+  margin-left: 5px;
+  display: inline-flex;
+  align-items: center;
+}
+.json-valid .json-valid-text {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-left: 6px;
+}
+.arguments {
+  margin-left: 20px;
+}
+.arguments .arg {
+  counter-reset: varargs -1;
+}
+.arguments .arg .variadic-arg {
+  counter-increment: varargs 1;
+  margin-bottom: 5px;
+}
+.arguments .arg .variadic-arg:before {
+  content: " " counter(varargs);
+  margin-right: 7px;
+}
+.arguments {
+  margin-left: 20px;
+}
+.arguments .arg {
+  counter-reset: varargs -1;
+}
+.arguments .arg .variadic-arg {
+  counter-increment: varargs 1;
+  margin-bottom: 5px;
+}
+.arguments .arg .variadic-arg:before {
+  content: " " counter(varargs);
+  margin-right: 7px;
+}
 .builder-view {
   display: flex;
 }

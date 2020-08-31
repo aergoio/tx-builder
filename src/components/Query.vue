@@ -13,12 +13,7 @@
             </div>
           </div>
           <h3>Arguments</h3>
-          <div v-if="selectedContractFunction && selectedContractFunction.arguments" class="arguments">
-            <div v-for="arg in selectedContractFunction.arguments">
-              <h4>{{arg.name}}</h4>
-              <input class="text-input" type="text" v-model="contractArgs[arg.name]">
-            </div>
-          </div>
+          <MethodArgs :method="selectedContractFunction" v-model="contractArgs"></MethodArgs>
         </fieldset>
         <fieldset>
           <Button type="primary" @click="query">Query</Button>
@@ -50,11 +45,12 @@ import { TxTypes, Amount, Address, encodeBuffer } from '@herajs/common';
 import { Contract } from '@herajs/client';
 import { Icon, LoadingIndicator } from './icons/';
 import { Button } from './buttons/';
+import MethodArgs from './MethodArgs.vue';
 
-@Component({ components: { JsonView, LoadingIndicator, Icon, Button, }})
+@Component({ components: { JsonView, LoadingIndicator, Icon, Button, MethodArgs, }})
 export default class QueryView extends Vue {
   contractMethod = null;
-  contractArgs = {};
+  contractArgs = [];
   result = null;
   status = '';
  
@@ -83,7 +79,7 @@ export default class QueryView extends Vue {
       address: this.contractAddress,
       abi: this.contractAbi,
       method: this.contractMethod.name,
-      args: this.contractArgs
+      args: this.contractArgs.flat()
     });
     this.status = 'loaded';
   }

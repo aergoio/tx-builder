@@ -47,12 +47,7 @@
             </div>
           </div>
           <h3>Arguments</h3>
-          <div v-if="selectedContractFunction && selectedContractFunction.arguments" class="arguments">
-            <div v-for="arg in selectedContractFunction.arguments">
-              <h4>{{arg.name}}</h4>
-              <input class="text-input" type="text" v-model="contractArgs[arg.name]">
-            </div>
-          </div>
+          <MethodArgs :method="selectedContractFunction" v-model="contractArgs"></MethodArgs>
         </fieldset>
 
         <fieldset v-if="action === 'nameCreate'">
@@ -110,15 +105,9 @@
           <p class="note">Output of `aergolua --payload code.lua`</p>
 
           <h3>Arguments</h3>
-          <div v-if="deployConstructorAbi && deployConstructorAbi.length" class="arguments">
-            <div v-for="arg in deployConstructorAbi">
-              <h4>{{arg.name}}</h4>
-              <input class="text-input" type="text" v-model="contractDeployArgs[arg.name]">
-            </div>
-          </div>
-
+          <MethodArgs :method="deployConstructorAbi" v-model="contractDeployArgs"></MethodArgs>
+          {{contractDeployArgs}}
         </fieldset>
-
       </form>
     </div>
     <div>
@@ -154,7 +143,7 @@
               <Icon :size="24" name="danger-circle"></Icon>
               <span>Failed loading receipt for {{hash}}</span>
             </div>
-            <pre class="receipt-json">idk</pre>
+            <pre class="receipt-json"></pre>
           </div>
         </div>
       </div>
@@ -169,6 +158,7 @@ import { TxTypes, Amount, Address, encodeBuffer, decodeToBytes } from '@herajs/c
 import { Contract } from '@herajs/client';
 import { Icon, LoadingIndicator } from './icons/';
 import { Button, ButtonGroup } from './buttons/';
+import MethodArgs from './MethodArgs.vue';
 
 const normalActions = ['normal', 'transfer', 'call', 'feeDelegation', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
@@ -213,7 +203,7 @@ async function requestSendTx(data) {
   return result.hash;
 }
 
-@Component({ components: { JsonView, LoadingIndicator, Icon, Button, ButtonGroup, }})
+@Component({ components: { JsonView, LoadingIndicator, Icon, Button, ButtonGroup, MethodArgs, }})
 export default class BuilderView extends Vue {
   action: Action = 'normal';
   dposActions = dposActions;
@@ -221,10 +211,10 @@ export default class BuilderView extends Vue {
 
   txBody = defaultTxBody;
   contractMethod = null;
-  contractArgs = {};
+  contractArgs = [];
   contractDeployPayload = null;
-  contractDeployArgs = {};
-  deployConstructorAbi = [];
+  contractDeployArgs = [];
+  deployConstructorAbi = null;
 
   name = {
     name: '',
@@ -285,7 +275,7 @@ export default class BuilderView extends Vue {
     }
     const payload = {
       Name: this.contractMethod.name,
-      Args: this.contractMethod.arguments.map(arg => this.contractArgs[arg.name]),
+      Args: this.contractArgs.flat(),
     };
     this.updateTxBody({ payload_json: payload });
   }
@@ -487,7 +477,7 @@ export default class BuilderView extends Vue {
       if (e.target) {
         this.contractDeployPayload = `${e.target.result}`.trim();
         const text = encodeBuffer(decodeToBytes(this.contractDeployPayload, 'base58'), 'ascii');
-        const match = text.match(new RegExp(/{"name":"constructor","arguments":(\[.*?\])}/));
+        const match = text.match(new RegExp(/({"name":"constructor","arguments":\[.*?\]})/));
         if (match) {
           this.deployConstructorAbi = JSON.parse(match[1]);
         }
@@ -498,7 +488,7 @@ export default class BuilderView extends Vue {
 
   updateContractDeployPayload() {
     const contract = Contract.fromCode(this.contractDeployPayload);
-    const args = this.deployConstructorAbi.map(arg => this.contractDeployArgs[arg.name]);
+    const args = this.contractDeployArgs.flat();
     this.updateTxBody({ payload: encodeBuffer(contract.asPayload(args), 'base64') });
   }
 

@@ -73,7 +73,9 @@
 
         <fieldset v-if="action === 'voteDAO'">
           <h3>Vote ID</h3>
-          <input class="text-input" type="text" required v-model="vote.name">
+          <select v-model="vote.name" class="text-input" style="height: 30px;">
+            <option v-for="voteId in ['bpcount', 'stakingmin', 'gasprice', 'nameprice']" :value="voteId">{{voteId}}</option>
+          </select>
           <h3>List of candidates (comma separated)</h3>
           <input class="text-input" type="text" required v-model="vote.candidates">
         </fieldset>
@@ -402,6 +404,7 @@ export default class BuilderView extends Vue {
       }
       else if (action === 'voteDAO') {
         payload_json = { Name: 'v1voteDAO', Args: [] };
+        if (!this.vote.name) this.vote.name = 'bpcount';
       }
       this.updateTxBody({ type: TxTypes.Governance, to: 'aergo.system', payload: undefined, payload_json });
       if (raftActions.indexOf(action as typeof raftActions[number]) !== -1) {

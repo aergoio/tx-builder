@@ -13,14 +13,15 @@ import NetworkSelector from './NetworkSelector.vue';
 import LoginWithAergoConnect from './LoginWithAergoConnect.vue';
 import ContractAddressInput from './ContractAddressInput.vue';
 import { Address } from '@herajs/common';
+import { ChainConfigs } from '../config';
 
 @Component({ components: { NetworkSelector, LoginWithAergoConnect, ContractAddressInput, }})
 export default class App extends Vue {
   contractAddress: string = '';
   account: any = null;
 
-  get activeChainId(): any {
-    return this.$store.state.activeChainId;
+  get chainId(): any {
+    return this.$store.state.chainId;
   }
   get activeAccount(): any {
     return this.$store.state.activeAccount;
@@ -28,12 +29,19 @@ export default class App extends Vue {
 
   async connectAccount() {
     const account = await this.$store.dispatch('refreshActiveAccount');
-    const chainId = this.activeChainId.chainid.magic;
-    if (chainId != account.chainId) {
-      alert(`The selected account's chain id does not match the expected chain id ${chainId}. Please select another account.`);
+    console.log('logged in', account);
+    const chainId = account.chainId;
+    if (chainId === this.chainId) {
       return;
     }
-    console.log('logged in', account);
+    let nodeUrl = '';
+    const chainConfig = ChainConfigs.find(conf => conf.chainId === chainId);
+    if (chainConfig) {
+      nodeUrl = chainConfig.nodeUrl;
+    } else {
+      nodeUrl = prompt(`Unknown chain id: ${chainId}\nPlease enter a Node URL to connect to this chain.`);
+    }
+    this.$store.dispatch('setChain', { nodeUrl });
   }
 }
 </script>

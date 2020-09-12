@@ -10,7 +10,7 @@
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button v-for="a in ['call', 'deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
-                :disabled="!(a === 'deploy' || contractAbi)" v-show="a !== 'redeploy' || consensus === 'raft'">{{a}}</Button>
+                :disabled="!(a === 'deploy' || contractAbi)" v-show="a !== 'redeploy' || !publicChain">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
@@ -429,6 +429,10 @@ export default class BuilderView extends Vue {
 
   get consensus() {
     return this.$store.state.chainInfo?.chainid?.consensus;
+  }
+
+  get publicChain() {
+    return this.$store.state.chainInfo?.chainid?.public;
   }
 
   get namePrice() {

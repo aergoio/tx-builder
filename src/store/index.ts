@@ -18,7 +18,8 @@ interface State {
     address: any;
     abi: any;
     status: string;
-  }
+  },
+  shouldReset: number,
 }
 
 export default new Vuex.Store<State>({
@@ -32,7 +33,8 @@ export default new Vuex.Store<State>({
       address: null,
       abi: null,
       status: '',
-    }
+    },
+    shouldReset: 0,
   },
   mutations: {
     setChain(state, { chainId, chainInfo }) {
@@ -51,6 +53,9 @@ export default new Vuex.Store<State>({
     },
     setContractStatus(state, status) {
       state.contract.status = status;
+    },
+    setShouldReset(state, shouldReset) {
+      state.shouldReset = state.shouldReset + 1;
     }
   },
   actions: {
@@ -92,6 +97,10 @@ export default new Vuex.Store<State>({
         commit('setContractStatus', 'error');
         return false;
       }
+    },
+    async reset({ commit }) {
+      commit('setContract', { address: null, abi: null });
+      commit('setShouldReset');
     },
     async setChain({ commit }, { nodeUrl }) {
       commit('setChainError', '');

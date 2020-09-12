@@ -30,7 +30,7 @@
             v-model="txBody.to" :disabled="!canEditRecipient">
             
           <h3>Amount</h3>
-          <input class="text-input" type="text" pattern="\d+ \w+" @change="$refs.form.reportValidity()" required ref="amountInput"
+          <input class="text-input" type="text" pattern="\d+(\.\d+)? ?\w+" @change="$refs.form.reportValidity()" required ref="amountInput"
             v-model="txBody.amount" :disabled="!canEditAmount">
         </fieldset>
 
@@ -170,7 +170,7 @@ const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'setConfig', 'e
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
 type Action = typeof actions[number];
 
-const defaultTxBody = {
+const defaultTxBody: Record<string, any> = {
   type: 0,
   from: "",
   to: "",
@@ -213,7 +213,7 @@ export default class BuilderView extends Vue {
   dposActions = dposActions;
   raftActions = raftActions;
 
-  txBody = defaultTxBody;
+  txBody = { ...defaultTxBody };
   contractMethod = null;
   contractArgs = [];
   contractDeployPayload = null;
@@ -249,6 +249,9 @@ export default class BuilderView extends Vue {
 
   @Watch('txBody.amount')
   amountChanged() {
+    // Normalize
+    this.txBody.amount = this.txBody.amount.replace(/(\d+(\.\d+)?)\s*([^\d\W])/, '$1 $3');
+    // Validate
     const $amountInput = this.$refs.amountInput as HTMLInputElement;
     try {
       new Amount($amountInput.value);
@@ -459,12 +462,12 @@ export default class BuilderView extends Vue {
   }
 
   get availableFunctions() {
-    return this.contractAbi.functions.filter(func => !func.view);
+    return this.contractAbi?.functions.filter(func => !func.view) || [];
   }
 
   get selectedContractFunction() {
     if (!this.contractMethod) return undefined;
-    return this.contractAbi.functions.find(func =>
+    return this.contractAbi?.functions.find(func =>
       func.name === this.contractMethod.name && func.name !== 'constructor' && func.name !== 'default'
     );
   }

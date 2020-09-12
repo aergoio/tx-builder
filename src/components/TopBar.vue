@@ -2,6 +2,7 @@
   <div class="top-bar">
     <NetworkSelector></NetworkSelector>
     <ContractAddressInput></ContractAddressInput>
+    <span class="reset-btn" @click="reset">Reset</span>
     <LoginWithAergoConnect @click.native="connectAccount" :loggedInAddress="activeAccount ? activeAccount.address : ''"></LoginWithAergoConnect>
   </div>
 </template>
@@ -43,17 +44,33 @@ export default class App extends Vue {
     }
     this.$store.dispatch('setChain', { nodeUrl });
   }
+
+  async reset() {
+    const check = confirm('Reset contract address and tx body?');
+    if (!check) return;
+    if (this.$router.currentRoute.path !== '/') {
+      await this.$router.push('/');
+      await this.$store.dispatch('reset');
+    }
+  }
 }
 </script>
 
 <style lang="scss">
 .top-bar {
-  background-color: #171717;
+  background-color: #111;
   padding: 0 12px;
   color: #eee;
   display: flex;
   justify-content: space-between;
 
   line-height: 45px
+}
+.reset-btn {
+  cursor: pointer;
+  padding: 0 10px;
+  &:hover {
+    background-color: #1a1a1a;
+  }
 }
 </style>

@@ -4,11 +4,11 @@
     <div class="builder-content">
       <h2>TX Builder</h2>
       <div class="view">
-        <Builder></Builder>
+        <Builder :key="`builder-${shouldReset}`"></Builder>
       </div>
       <h2>Contract Query</h2>
       <div class="view">
-        <Query></Query>
+        <Query :key="`query-${shouldReset}`"></Query>
       </div>
     </div>
   </div>
@@ -23,6 +23,9 @@ import Query from '../components/Query.vue';
 
 @Component({ components: { TopBar, Builder, Query, }})
 export default class BuilderView extends Vue {
+  get shouldReset() {
+    return this.$store.state.shouldReset;
+  }
 }
 </script>
 

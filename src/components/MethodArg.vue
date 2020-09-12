@@ -9,6 +9,7 @@
       <h4 class="variadic">Variadic argument</h4>
       <div v-for="idx in variadicArgs" :key="idx" class="variadic-arg">
         <input class="text-input" type="text" v-model="valueCopy[Number(idx)]" @input="handleInput($event.target.value, Number(idx))">
+        <Button @click="removeVariadicArg(Number(idx))" v-if="variadicCount > 1">-</Button>
         <Button @click="addVariadicArg" v-if="idx === variadicCount - 1">+</Button>
         <ValidJson :value="valueCopy[Number(idx)]"></ValidJson>
       </div>
@@ -38,8 +39,12 @@ export default class BuilderView extends Vue {
       this.valueCopy = value;
     } else {
       this.valueCopy[subIndex] = value;
+      // Remove undefined's, they mean that the variadic arg was deleted
+      if (typeof value === 'undefined') {
+        this.valueCopy = this.valueCopy.filter(item => typeof item !== 'undefined');
+      }
     }
-    
+
     try {
       const json = Array.isArray(this.valueCopy) ? this.valueCopy.map(v => JSON.parse(v)) : JSON.parse(value);
       this.$emit('input', json);
@@ -53,6 +58,11 @@ export default class BuilderView extends Vue {
 
   addVariadicArg() {
     this.variadicCount += 1;
+  }
+
+  removeVariadicArg(idx) {
+    this.handleInput(undefined, idx);
+    this.variadicCount -= 1;
   }
 
   get variadicArgs() {
@@ -75,6 +85,10 @@ export default class BuilderView extends Vue {
         margin-right: 7px;
       }
     }
+  }
+
+  .text-input {
+    min-width: 180px; 
   }
 }
 </style>

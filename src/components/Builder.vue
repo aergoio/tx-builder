@@ -94,16 +94,27 @@
           </span>
         </fieldset>
 
-        <fieldset v-if="action === 'setConfig' || action === 'removeConfig'">
-          <h3>Config key</h3>
-          <input class="text-input" type="text" required v-model="raft.configName">
-          <h3>Config value</h3>
-          <input class="text-input" type="text" required v-model="raft.jsonArg">
-        </fieldset>
-
-        <fieldset v-if="action === 'enableConfig'">
-          <h3>Config key</h3>
-          <input class="text-input" type="text" required v-model="raft.configName">
+        <fieldset v-if="action === 'appendConfig' || action === 'removeConfig' || action === 'enableConfig'">
+          <div style="margin-bottom: 15px">
+            <h3>Config key</h3>
+            <select v-model="raft.configName" class="text-input" style="height: 30px;">
+              <option v-for="configKey in ['p2pwhite', 'accountwhite']" :value="configKey">{{configKey}}</option>
+            </select>
+          </div>
+          <div v-if="action === 'enableConfig'">
+            <h3>Enable/disable</h3>
+            <select v-model="raft.jsonArg" class="text-input" style="height: 30px;">
+              <option v-for="arg in ['true', 'false']" :value="arg">{{arg}}</option>
+            </select>
+          </div>
+          <div v-else>
+            <h3>Config value</h3>
+            <input class="text-input" type="text" required v-model="raft.jsonArg">
+            <span>
+              <Icon :size="16" :name="raft.jsonArgValid ? 'checkmark-circle' : 'danger-circle'"></Icon>
+              <span v-if="!raft.jsonArgValid" class="note">Enter valid JSON</span>
+            </span>
+          </div>
         </fieldset>
 
         <fieldset v-if="action === 'deploy' || action === 'redeploy'">
@@ -168,7 +179,7 @@ import MethodArgs from './MethodArgs.vue';
 
 const normalActions = ['normal', 'transfer', 'call', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
-const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'setConfig', 'enableConfig', 'removeConfig'] as const;
+const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'appendConfig', 'removeConfig', 'enableConfig'] as const;
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
 type Action = typeof actions[number];
 
@@ -321,23 +332,25 @@ export default class BuilderView extends Vue {
     else if (this.action === 'removeAdmin') {
       this.updateTxBody({ payload_json: { Name: 'removeAdmin', Args: [ this.raft.admin ]}});
     }
-    else if (this.action === 'changeCluster') {
+    else {
       try {
         const parsedJson = JSON.parse(this.raft.jsonArg);
         this.raft.jsonArgValid = true;
-        this.updateTxBody({ payload_json: { Name: 'changeCluster', Args: [ parsedJson ]}});
+        if (this.action === 'changeCluster') {
+          this.updateTxBody({ payload_json: { Name: 'changeCluster', Args: [ parsedJson ]}});
+        }
+        else if (this.action === 'appendConfig') {
+          this.updateTxBody({ payload_json: { Name: 'appendConf', Args: [ this.raft.configName, parsedJson ]}});
+        }
+        else if (this.action === 'removeConfig') {
+          this.updateTxBody({ payload_json: { Name: 'removeConf', Args: [ this.raft.configName, parsedJson ]}});
+        }
+        else if (this.action === 'enableConfig') {
+          this.updateTxBody({ payload_json: { Name: 'enableConf', Args: [ this.raft.configName, parsedJson ]}});
+        }
       } catch(e) {
         this.raft.jsonArgValid = false;
       }
-    }
-    else if (this.action === 'setConfig') {
-      this.updateTxBody({ payload_json: { Name: 'setConf', Args: [ this.raft.configName, this.raft.jsonArg ]}});
-    }
-    else if (this.action === 'removeConfig') {
-      this.updateTxBody({ payload_json: { Name: 'removeConf', Args: [ this.raft.configName, this.raft.jsonArg ]}});
-    }
-    else if (this.action === 'enableConfig') {
-      this.updateTxBody({ payload_json: { Name: 'enableConf', Args: [ this.raft.configName, true ]}});
     }
   }
 
@@ -408,7 +421,13 @@ export default class BuilderView extends Vue {
       }
       this.updateTxBody({ type: TxTypes.Governance, to: 'aergo.system', payload: undefined, payload_json });
       if (raftActions.indexOf(action as typeof raftActions[number]) !== -1) {
+        this.updateTxBody({to: 'aergo.enterprise' });
         this.updateRaftPayload();
+        if (!this.raft.configName) this.raft.configName = 'p2pwhite';
+        if (!this.raft.jsonArg || ['true', 'false'].indexOf(this.raft.jsonArg) !== -1) this.raft.jsonArg = '""';
+        if (this.action === 'enableConfig' && ['true', 'false'].indexOf(this.raft.jsonArg) === -1) {
+          this.raft.jsonArg = 'true';
+        }
       }
     }
   }

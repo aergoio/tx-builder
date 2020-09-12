@@ -63,7 +63,7 @@ export default class QueryView extends Vue {
   }
 
   get availableFunctions() {
-    return this.contractAbi?.functions.filter(func => !func.view && func.name !== 'constructor' && func.name !== 'default') || [];
+    return this.contractAbi?.functions.filter(func => func.name !== 'constructor' && func.name !== 'default') || [];
   }
 
   get selectedContractFunction() {

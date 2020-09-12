@@ -1,5 +1,5 @@
 <template lang="html">
-  <div v-if="args" class="arguments">
+  <div v-if="args && args.length" class="arguments">
     <MethodArg v-for="arg in args" :key="arg.name" :arg="arg" v-model="valueCopy[arg.idx]" @input="handleInput(arg.idx, $event)"></MethodArg>
   </div>
   <div v-else>(None)</div>

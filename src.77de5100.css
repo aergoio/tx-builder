@@ -114,12 +114,20 @@ p {
   margin-left: 5px;
 }
 .top-bar {
-  background-color: #171717;
+  background-color: #111;
   padding: 0 12px;
   color: #eee;
   display: flex;
   justify-content: space-between;
   line-height: 45px;
+}
+
+.reset-btn {
+  cursor: pointer;
+  padding: 0 10px;
+}
+.reset-btn:hover {
+  background-color: #1a1a1a;
 }
 .editor {
   height: 200px;
@@ -147,6 +155,9 @@ p {
 .arguments .arg .variadic-arg:before {
   content: " " counter(varargs);
   margin-right: 7px;
+}
+.arguments .text-input {
+  min-width: 180px;
 }
 .arguments {
   margin-left: 20px;

@@ -48,9 +48,9 @@ export default class App extends Vue {
   async reset() {
     const check = confirm('Reset contract address and tx body?');
     if (!check) return;
+    await this.$store.dispatch('reset');
     if (this.$router.currentRoute.path !== '/') {
       await this.$router.push('/');
-      await this.$store.dispatch('reset');
     }
   }
 }

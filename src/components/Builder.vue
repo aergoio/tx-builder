@@ -241,6 +241,7 @@ export default class BuilderView extends Vue {
   deployConstructorAbi = null;
   delegateFee = false;
 
+  voteDAODefaults = {...voteDaoDefaults};
   voteDAOKeys = Object.keys(voteDaoDefaults);
 
   name = {
@@ -376,7 +377,7 @@ export default class BuilderView extends Vue {
     else if (this.action === 'voteDAO') {
       if (!candidates.length || candidates[0] === '' || this.txBody.payload_json?.Args[0] !== this.vote.name) {
         // Reset to default value on change of Vote ID
-        candidates = [voteDaoDefaults[this.vote.name]];
+        candidates = [this.voteDAODefaults[this.vote.name]];
         this.vote.candidates = candidates[0] || '';
       }
       this.updateTxBody({ payload_json: { Name: 'v1voteDAO', Args: [ this.vote.name, ...candidates ]}});
@@ -467,11 +468,24 @@ export default class BuilderView extends Vue {
   }
 
   get consensus() {
-    return this.$store.state.chainInfo?.chainid?.consensus;
+    return this.chainInfo?.chainid?.consensus;
   }
 
   get publicChain() {
-    return this.$store.state.chainInfo?.chainid?.public;
+    return this.chainInfo?.chainid?.public;
+  }
+
+  get chainInfo() {
+    return this.$store.state.chainInfo;
+  }
+
+  @Watch('chainInfo')
+  chainInfoChanged() {
+    // Set DAO defaults to current values from chainInfo
+    this.voteDAODefaults.BPCOUNT = `${this.chainInfo.bpnumber}`;
+    this.voteDAODefaults.STAKINGMIN = this.chainInfo.stakingminimum.formatNumber('aer');
+    this.voteDAODefaults.GASPRICE = this.chainInfo.gasprice.formatNumber('aer');
+    this.voteDAODefaults.NAMEPRICE = this.chainInfo.nameprice.formatNumber('aer');
   }
 
   get namePrice() {

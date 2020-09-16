@@ -16,7 +16,7 @@
           <MethodArgs :method="selectedContractFunction" v-model="contractArgs"></MethodArgs>
         </fieldset>
         <fieldset>
-          <Button type="primary" @click="query">Query</Button>
+          <Button type="primary" @click="query" :disabled="!contractMethod">Query</Button>
         </fieldset>
       </form>
     </div>

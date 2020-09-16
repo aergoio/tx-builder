@@ -46,7 +46,9 @@ export default class NetworkSelector extends Vue {
 
   selectNetwork() {
     const nodeUrl = prompt('Enter Aergo Node URL');
-    this.$store.dispatch('setChain', { nodeUrl })
+    if (nodeUrl) {
+      this.$store.dispatch('setChain', { nodeUrl })
+    }
   }
 }
 </script>

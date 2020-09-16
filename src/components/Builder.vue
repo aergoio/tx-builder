@@ -74,7 +74,7 @@
         <fieldset v-if="action === 'voteDAO'">
           <h3>Vote ID</h3>
           <select v-model="vote.name" class="text-input" style="height: 30px;">
-            <option v-for="voteId in ['bpcount', 'stakingmin', 'gasprice', 'nameprice']" :value="voteId">{{voteId}}</option>
+            <option v-for="voteId in voteDAOKeys" :value="voteId">{{voteId}}</option>
           </select>
           <h3>List of candidates (comma separated)</h3>
           <input class="text-input" type="text" required v-model="vote.candidates">
@@ -183,6 +183,13 @@ const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'appendConfig',
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
 type Action = typeof actions[number];
 
+const voteDaoDefaults = {
+  BPCOUNT: '13',
+  STAKINGMIN: '10000000000000000000000',
+  GASPRICE: '50000000000',
+  NAMEPRICE: '20000000000000000000',
+}
+
 const defaultTxBody: Record<string, any> = {
   type: 0,
   from: "",
@@ -233,6 +240,8 @@ export default class BuilderView extends Vue {
   contractDeployArgs = [];
   deployConstructorAbi = null;
   delegateFee = false;
+
+  voteDAOKeys = Object.keys(voteDaoDefaults);
 
   name = {
     name: '',
@@ -360,11 +369,16 @@ export default class BuilderView extends Vue {
   }
 
   updateVotePayload() {
-    const candidates = this.vote.candidates.split(',');
+    let candidates = this.vote.candidates.split(',');
     if (this.action === 'voteBP') {
       this.updateTxBody({ payload_json: { Name: 'v1voteBP', Args: [ ...candidates ]}});
     }
     else if (this.action === 'voteDAO') {
+      if (!candidates.length || candidates[0] === '' || this.txBody.payload_json?.Args[0] !== this.vote.name) {
+        // Reset to default value on change of Vote ID
+        candidates = [voteDaoDefaults[this.vote.name]];
+        this.vote.candidates = candidates[0] || '';
+      }
       this.updateTxBody({ payload_json: { Name: 'v1voteDAO', Args: [ this.vote.name, ...candidates ]}});
     }
   }
@@ -417,7 +431,7 @@ export default class BuilderView extends Vue {
       }
       else if (action === 'voteDAO') {
         payload_json = { Name: 'v1voteDAO', Args: [] };
-        if (!this.vote.name) this.vote.name = 'bpcount';
+        if (!this.vote.name) this.vote.name = 'BPCOUNT';
       }
       this.updateTxBody({ type: TxTypes.Governance, to: 'aergo.system', payload: undefined, payload_json });
       if (raftActions.indexOf(action as typeof raftActions[number]) !== -1) {

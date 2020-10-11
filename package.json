@@ -11,13 +11,16 @@
     "deploy:s3": "yarn build && aws s3 sync --acl public-read --profile $PROFILE --delete dist s3://$BUCKET_NAME",
     "cloudfront": "aws cloudfront --profile $PROFILE create-invalidation --distribution-id $DISTRIBUTION_ID --paths '/*'"
   },
-  "author": "",
+  "browserslist": [
+    "since 2017-06"
+  ],
+  "author": "Paul Grau <paul@blocko.io>",
   "license": "ISC",
   "dependencies": {
     "@herajs/client": "^0.21.0",
     "@herajs/common": "^0.21.0",
     "monaco-editor": "^0.20.0",
-    "timed-async": "^0.3.1",
+    "timed-async": "^1.0.0",
     "vue": "^2.6.12",
     "vue-class-component": "^7.2.5",
     "vue-hot-reload-api": "^2.3.4",

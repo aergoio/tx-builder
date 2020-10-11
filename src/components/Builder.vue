@@ -118,9 +118,18 @@
         </fieldset>
 
         <fieldset v-if="action === 'deploy' || action === 'redeploy'">
-          <h3>Contract Code Payload</h3>
+          <h3>Contract Code</h3>
           <input class="text-input" type="file" required @change="handleContractFile" ref="contractCode">
-          <p class="note">Output of `aergolua --payload code.lua`</p>
+          <p class="note">Output of `aergolua --payload code.lua`, or code.lua</p>
+          
+          <div v-if="remoteCompile.loading" style="display: flex; align-items: center">
+            <LoadingIndicator :size="16" style="margin-right: 7px"></LoadingIndicator>
+            <span>Compiling...</span>
+          </div>
+          <div v-if="remoteCompile.result || remoteCompile.error" style="display: flex; align-items: center">
+            <Icon :size="16" :name="remoteCompile.error ? 'danger-circle' : 'checkmark-circle'"  style="margin-right: 7px"></Icon>
+            <span>{{remoteCompile.error ? remoteCompile.error : 'Compiled'}}</span>
+          </div>
 
           <h3>Arguments</h3>
           <MethodArgs :method="deployConstructorAbi" v-model="contractDeployArgs"></MethodArgs>
@@ -176,6 +185,8 @@ import { Contract } from '@herajs/client';
 import { Icon, LoadingIndicator } from './icons/';
 import { Button, ButtonGroup } from './buttons/';
 import MethodArgs from './MethodArgs.vue';
+import { getFileExtension } from '../utils';
+import { ensureDelay } from 'timed-async';
 
 const normalActions = ['normal', 'transfer', 'call', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
@@ -227,6 +238,14 @@ async function requestSendTx(data) {
   return result.hash;
 }
 
+async function fetchCompile(source: string) {
+  const result = await fetch('https://luac.aergo.io/compile', {
+    method: 'POST',
+    body: source,
+  }).then(response => response.text());
+  return result.replace('result:', '').trim();
+}
+
 @Component({ components: { JsonView, LoadingIndicator, Icon, Button, ButtonGroup, MethodArgs, }})
 export default class BuilderView extends Vue {
   action: Action = 'normal';
@@ -240,6 +259,7 @@ export default class BuilderView extends Vue {
   contractDeployArgs = [];
   deployConstructorAbi = null;
   delegateFee = false;
+  remoteCompile = { loading: false, result: '', error: ''};
 
   voteDAODefaults = {...voteDaoDefaults};
   voteDAOKeys = Object.keys(voteDaoDefaults);
@@ -372,7 +392,7 @@ export default class BuilderView extends Vue {
   updateVotePayload() {
     let candidates = this.vote.candidates.split(',');
     if (this.action === 'voteBP') {
-      this.updateTxBody({ payload_json: { Name: 'v1voteBP', Args: [ ...candidates ]}});
+      this.updateTxBody({ amount: '0 aergo', payload_json: { Name: 'v1voteBP', Args: [ ...candidates ]}});
     }
     else if (this.action === 'voteDAO') {
       if (!candidates.length || candidates[0] === '' || this.txBody.payload_json?.Args[0] !== this.vote.name) {
@@ -380,7 +400,7 @@ export default class BuilderView extends Vue {
         candidates = [this.voteDAODefaults[this.vote.name]];
         this.vote.candidates = candidates[0] || '';
       }
-      this.updateTxBody({ payload_json: { Name: 'v1voteDAO', Args: [ this.vote.name, ...candidates ]}});
+      this.updateTxBody({ amount: '0 aergo', payload_json: { Name: 'v1voteDAO', Args: [ this.vote.name, ...candidates ]}});
     }
   }
 
@@ -428,9 +448,11 @@ export default class BuilderView extends Vue {
         payload_json = { Name: 'v1unstake' };
       }
       else if (action === 'voteBP') {
+        this.updateTxBody({amount: '0 aergo' });
         payload_json = { Name: 'v1voteBP', Args: [] };
       }
       else if (action === 'voteDAO') {
+        this.updateTxBody({amount: '0 aergo' });
         payload_json = { Name: 'v1voteDAO', Args: [] };
         if (!this.vote.name) this.vote.name = 'BPCOUNT';
       }
@@ -535,10 +557,29 @@ export default class BuilderView extends Vue {
   handleContractFile(): void {
     const $elem = this.$refs.contractCode as HTMLInputElement;
     if (!$elem || !$elem.files || $elem.files.length === 0) return;
+    const file = $elem.files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       if (e.target) {
-        this.contractDeployPayload = `${e.target.result}`.trim();
+        const extension = getFileExtension(file.name);
+        if (extension === 'lua') {
+          try {
+            this.remoteCompile.loading = true;
+            this.remoteCompile.error = this.remoteCompile.result = this.contractDeployPayload = '';
+            this.remoteCompile.result = await ensureDelay(fetchCompile(`${e.target.result}`));
+            this.contractDeployPayload = this.remoteCompile.result;
+          } catch(err) {
+            // err doesn't contain any useful info
+            console.error(err);
+            this.remoteCompile.error = 'Failed to compile.';
+          } finally {
+            this.remoteCompile.loading = false;
+          }
+        } else {
+          this.contractDeployPayload = `${e.target.result}`.trim();
+        }
+        this.deployConstructorAbi = null;
+        if (!this.contractDeployPayload) return;
         const text = encodeBuffer(decodeToBytes(this.contractDeployPayload, 'base58'), 'ascii');
         const match = text.match(new RegExp(/({"name":"constructor","arguments":\[.*?\]})/));
         if (match) {
@@ -546,7 +587,7 @@ export default class BuilderView extends Vue {
         }
       }
     };
-    reader.readAsText($elem.files[0]);
+    reader.readAsText(file);
   }
 
   updateContractDeployPayload() {

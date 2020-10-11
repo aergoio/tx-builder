@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { timedAsync } from 'timed-async';
+import { ensureDelay } from 'timed-async';
 
 // @ts-ignore
 import { AergoClient, Contract, GrpcWebProvider } from '@herajs/client';
@@ -88,7 +88,7 @@ export default new Vuex.Store<State>({
     async setContractAddress({ commit }, { address }) {
       try {
         commit('setContractStatus', 'loading');
-        const abi = await timedAsync(aergo.getABI(address));
+        const abi = await ensureDelay(aergo.getABI(address));
         commit('setContract', { address, abi });
         commit('setContractStatus', 'loaded');
         return true;
@@ -120,7 +120,7 @@ export default new Vuex.Store<State>({
     async queryContract(_used, { address, abi, method, args }) {
       const contract = Contract.fromAbi(abi).setAddress(address);
       try {
-        return await timedAsync(aergo.queryContract(contract.functions[method](...args)));
+        return await ensureDelay(aergo.queryContract(contract.functions[method](...args)));
       } catch(e) {
         return { error: `${e}` };
       }

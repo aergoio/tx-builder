@@ -6543,10 +6543,10 @@ through2@^2.0.0, through2@~2.0.3:
     readable-stream "~2.3.6"
     xtend "~4.0.1"
 
-timed-async@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/timed-async/-/timed-async-0.3.1.tgz#6a863a839043c7e7b8d1ed514b4b492c4ce25f3f"
-  integrity sha512-9JccYCGuf5RHle1qVgq6Tyui8T42LGPR6XO9nnyq/JtMIH1LtOuWHR/kCkTYSNyaChFlxgfHw0xvqMqrIrV1vA==
+timed-async@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/timed-async/-/timed-async-1.0.0.tgz#f0d7af45d538f7febcd6a08ff9a911cbd20beb56"
+  integrity sha512-IxO6xdutaJbDRgdzPg/aEYrg8QEJfqdB18nlUloDVHJW9XAC6KGIpvaShHA9Q7eIC98XIZwAFq3Yr2QhviI94w==
 
 timers-browserify@^2.0.4:
   version "2.0.11"

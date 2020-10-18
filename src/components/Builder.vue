@@ -241,7 +241,7 @@ async function requestSendTx(data) {
 async function fetchCompile(source: string) {
   const result = await fetch('https://luac.aergo.io/compile', {
     method: 'POST',
-    body: source,
+    body: encodeBuffer(Buffer.from(source), 'base64'),
   }).then(response => response.text());
   return result.replace('result:', '').trim();
 }
@@ -565,7 +565,7 @@ export default class BuilderView extends Vue {
         if (extension === 'lua') {
           try {
             this.remoteCompile.loading = true;
-            this.remoteCompile.error = this.remoteCompile.result = this.contractDeployPayload = '';
+            this.remoteCompile.error = this.remoteCompile.result = this.contractDeployPayload = null;
             this.remoteCompile.result = await ensureDelay(fetchCompile(`${e.target.result}`));
             this.contractDeployPayload = this.remoteCompile.result;
           } catch(err) {

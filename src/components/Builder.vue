@@ -9,8 +9,8 @@
               <Button v-for="a in ['normal', 'transfer']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
-              <Button v-for="a in ['call', 'deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
-                :disabled="!(a === 'deploy' || contractAbi)" v-show="a !== 'redeploy' || !publicChain">{{a}}</Button>
+              <Button v-for="a in ['call', 'multicall', 'deploy', 'redeploy']" :class="{ active: action === a }" @click="action = a"
+                :disabled="!(a === 'deploy' || a === 'multicall' || contractAbi)" v-show="a !== 'redeploy' || !publicChain">{{a}}</Button>
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button v-for="a in ['nameCreate', 'nameUpdate']" :class="{ active: action === a }" @click="action = a">{{a}}</Button>
@@ -188,7 +188,7 @@ import MethodArgs from './MethodArgs.vue';
 import { getFileExtension } from '../utils';
 import { ensureDelay } from 'timed-async';
 
-const normalActions = ['normal', 'transfer', 'call', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy'] as const;
+const normalActions = ['normal', 'transfer', 'call', 'nameCreate', 'nameUpdate', 'deploy', 'redeploy', 'multicall'] as const;
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const;
 const raftActions = ['addAdmin', 'removeAdmin', 'changeCluster', 'appendConfig', 'removeConfig', 'enableConfig'] as const;
 const actions = [...normalActions, ...dposActions, ...raftActions] as const;
@@ -432,6 +432,9 @@ export default class BuilderView extends Vue {
     else if (action === 'deploy') {
       this.updateTxBody({ type: TxTypes.Deploy, to: '', payload_json: undefined });
     }
+    else if (action === 'multicall') {
+      this.updateTxBody({ type: TxTypes.MultiCall, to: '' });
+    }
     else if (action === 'redeploy') {
       this.updateTxBody({ type: TxTypes.Redeploy, to: this.contractAddress, payload_json: undefined });
     }
@@ -477,6 +480,7 @@ export default class BuilderView extends Vue {
       case TxTypes.FeeDelegation: this.action = 'call'; this.delegateFee = true; break;
       case TxTypes.Deploy: this.action = 'deploy'; break;
       case TxTypes.Redeploy: this.action = 'redeploy'; break;
+      case TxTypes.MultiCall: this.action = 'multicall'; break;
       case TxTypes.Governance:
         // TODO: more fine-grained action
     }

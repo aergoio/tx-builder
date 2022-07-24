@@ -73,7 +73,7 @@ export default class JsonView extends Vue {
 
 <style lang="scss">
 .editor {
-  height: 200px;
+  height: 310px;
 }
 </style>
 

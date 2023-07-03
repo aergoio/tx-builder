@@ -1,20 +1,22 @@
 <template>
   <div class="component login-with-aergo-connect" :class="{ dark }">
-    <span class="icon"><Icon :name="dark ? 'aergo-light' : 'aergo'" :size="24" /></span>
+    <span class="icon"
+      ><Icon :name="dark ? 'aergo-light' : 'aergo'" :size="22"
+    /></span>
     <span class="label" v-if="!loggedInAddress">
       <span class="label-main" style="text-transform: uppercase">Login</span>
-      <span class="label-sub">with Aergo Connect</span>
+      <span class="label-sub">with Aergo Connect 3.0</span>
     </span>
     <span class="label" v-else>
-      <span class="label-main">{{loggedInAddress}}</span>
+      <span class="label-main">{{ loggedInAddress }}</span>
       <span class="label-sub">Logged in</span>
     </span>
   </div>
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from 'vue';
-import { Icon } from './icons';
+import Vue, { PropType } from 'vue'
+import { Icon } from './icons'
 
 export default Vue.extend({
   name: 'InputButton',
@@ -25,7 +27,7 @@ export default Vue.extend({
   components: {
     Icon,
   },
-});
+})
 </script>
 
 <style lang="scss">
@@ -44,7 +46,7 @@ export default Vue.extend({
     border-radius: 100%;
     border: 1px solid #f4f4f4;
     background-color: #fff;
-    padding: 1px;
+    padding: 3px;
     margin-right: 10px;
   }
 
@@ -53,9 +55,9 @@ export default Vue.extend({
     flex-direction: column;
     line-height: 1.2;
     overflow: hidden;
-    font-size: .85em;
+    font-size: 0.85em;
     padding-right: 10px;
-  
+
     .label-main {
       font-weight: 500;
       white-space: nowrap;
@@ -64,13 +66,13 @@ export default Vue.extend({
     }
     .label-sub {
       opacity: 0.5;
-      font-size: .9em;
+      font-size: 0.9em;
     }
   }
 
   &.dark {
     &:hover {
-      background-color: rgba(#000, .3);
+      background-color: rgba(#000, 0.3);
     }
     > .icon {
       background-color: #000;

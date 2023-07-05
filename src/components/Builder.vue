@@ -315,9 +315,36 @@
               ></Icon>
               <span>{{ receipt.status }} for {{ hash }}</span>
             </div>
-            <pre class="receipt-json" v-if="receipt">{{
-              JSON.stringify(receipt, null, 2)
-            }}</pre>
+            <pre class="receipt-json" v-if="receipt">
+            <ButtonGroup>
+              <Button
+              :class="`receipt-result_button ${receiptResultStatus==='json'? `active` : ``}`"
+                @click="changeResultView('json')"
+                :disabled="false"
+                >JSON</Button
+              >
+              <Button
+              :class="`receipt-result_button ${receiptResultStatus==='events'? `active` : ``}`"
+                @click="changeResultView('events')"
+                :disabled="false"
+                >Events</Button
+              >
+            </ButtonGroup>
+            <pre v-if="receiptResultStatus==='json'">{{JSON.stringify(receipt, null,2)}}</pre>
+            <table class="events-table" v-else-if="receiptResultStatus==='events' && receipt.events.length>0">
+              <thead>
+                <th>Event Name</th>
+                <th>Arguments</th>
+              </thead>
+              <tbody>
+                <tr v-for="row in receipt.events" :key="`${row.txHash}${row.eventidx}`">
+                  <td>{{ row.eventName }}</td>
+                  <td class="args">{{ row.args }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <table v-else>No Events Data</table>
+            </pre>
           </div>
           <div v-if="receiptStatus === 'error'">
             <div class="receipt-status">
@@ -414,10 +441,12 @@ function aergoConnectCall(action, responseType, d): Promise<any> {
 }
 async function requestSignTx(data) {
   const result = await aergoConnectCall('SIGN_TX', 'AERGO_SIGN_TX_RESULT', data)
+  console.log(result, 'result')
   return result.signature
 }
 async function requestSendTx(data) {
   const result = await aergoConnectCall('SEND_TX', 'AERGO_SEND_TX_RESULT', data)
+  console.log(result, 'result')
   return result.hash
 }
 
@@ -477,6 +506,8 @@ export default class BuilderView extends Vue {
   receipt: any
   signature = null
   hash = null
+
+  receiptResultStatus = 'json'
 
   updateTxBody(change) {
     this.txBody = { ...this.txBody, ...change }
@@ -846,6 +877,10 @@ export default class BuilderView extends Vue {
     )
   }
 
+  changeResultView(receiptResultStatus) {
+    this.receiptResultStatus = receiptResultStatus
+  }
+
   handleContractFile(): void {
     const $elem = this.$refs.contractCode as HTMLInputElement
     if (!$elem || !$elem.files || $elem.files.length === 0) return
@@ -1046,12 +1081,45 @@ fieldset h3:first-of-type {
   }
 }
 .receipt-json {
-  white-space: pre-wrap;
-  word-break: break-all;
   margin: 20px 0;
   font-size: 0.9em;
   line-height: 1.3;
   background-color: #282828;
   padding: 4px 6px;
+
+  .button-group {
+    .receipt-result_button {
+      flex: none;
+    }
+  }
+  pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .events-table {
+    th {
+      position: relative;
+      height: auto;
+      padding-bottom: 5px;
+      color: #fff;
+      border-bottom: 1px solid #443f51;
+      padding-right: 10px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    td {
+      height: auto;
+      color: #fff;
+      border-bottom: none;
+      padding-right: 10px;
+      font-size: 12px;
+    }
+    .args {
+      width: 100%;
+    }
+  }
 }
 </style>

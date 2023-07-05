@@ -441,12 +441,10 @@ function aergoConnectCall(action, responseType, d): Promise<any> {
 }
 async function requestSignTx(data) {
   const result = await aergoConnectCall('SIGN_TX', 'AERGO_SIGN_TX_RESULT', data)
-  console.log(result, 'result')
   return result.signature
 }
 async function requestSendTx(data) {
   const result = await aergoConnectCall('SEND_TX', 'AERGO_SEND_TX_RESULT', data)
-  console.log(result, 'result')
   return result.hash
 }
 

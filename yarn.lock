@@ -825,12 +825,12 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@herajs/client@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@herajs/client/-/client-2.0.1.tgz#0f4c058d4a5c9abaf9b9ec06bbe3ac9305f7a5de"
-  integrity sha512-E/WYQkeKoZvvAEEQ1j6zrJUSgyYAag2kHMqFjNrJYhbPeG/L5Y0VX3uwI104km/TmJxgEGPGr+dWd5ay7zVgQA==
+"@herajs/client@^0.21.0":
+  version "0.21.0"
+  resolved "https://registry.yarnpkg.com/@herajs/client/-/client-0.21.0.tgz#b75ed91dbea21ed62de7b1395ea27e1bb5c3d9de"
+  integrity sha512-3FcWpjsJY2ofGgwNPfUM53XY3b5sTDnWk0K0xF7OEVsmK5Ftw/c6K/OT0dmzx6Lf6mdaad24MzgkOPQCgUtHwQ==
   dependencies:
-    "@herajs/common" "^2.0.1"
+    "@herajs/common" "^0.21.0"
     "@improbable-eng/grpc-web" "^0.9.1"
     "@types/google-protobuf" "^3.2.7"
     google-protobuf "^3.21.2"
@@ -838,10 +838,10 @@
     hash.js "^1.1.7"
     jsbi "^3.0.0"
 
-"@herajs/common@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@herajs/common/-/common-2.0.1.tgz#7b528e919794be9b15760a66c4c0c54546efdc08"
-  integrity sha512-3qOY6w65kfGjxzzP/TQRmBxW6MKCkg/8Daivtq2J29GnnB0iDn3hH7yVQfb4caQ4FY8zY1gE95GkycUvjbpzNw==
+"@herajs/common@^0.21.0":
+  version "0.21.0"
+  resolved "https://registry.yarnpkg.com/@herajs/common/-/common-0.21.0.tgz#1df8059a279b7cbf28451e3998de8d1b6b714fac"
+  integrity sha512-XE2xP9k+T4vjRw1S0d84lT8NGz3Pf9cEFs+PRjqlvxAe/4+upIt3drVU9In2zJhcSN4iIFhYsABxa6XNASEC5Q==
   dependencies:
     create-hash "^1.2.0"
     jsbi "^3.0.0"

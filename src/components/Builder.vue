@@ -15,10 +15,12 @@
             </ButtonGroup>
             <ButtonGroup class="row">
               <Button
-                v-for="a in ['call', 'deploy', 'redeploy']"
+                v-for="a in ['call', 'multicall', 'deploy', 'redeploy']"
                 :class="{ active: action === a }"
                 @click="action = a"
-                :disabled="!(a === 'deploy' || contractAbi)"
+                :disabled="
+                  !(a === 'deploy' || a === 'multicall' || contractAbi)
+                "
                 v-show="a !== 'redeploy' || !publicChain"
                 >{{ a }}</Button
               >
@@ -384,6 +386,7 @@ const normalActions = [
   'nameUpdate',
   'deploy',
   'redeploy',
+  'multicall',
 ] as const
 const dposActions = ['stake', 'unstake', 'voteBP', 'voteDAO'] as const
 const raftActions = [
@@ -700,6 +703,8 @@ export default class BuilderView extends Vue {
         to: '',
         payload_json: undefined,
       })
+    } else if (action === 'multicall') {
+      this.updateTxBody({ type: TxTypes.MultiCall, to: '' })
     } else if (action === 'redeploy') {
       this.updateTxBody({
         type: TxTypes.Redeploy,

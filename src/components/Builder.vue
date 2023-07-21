@@ -782,6 +782,9 @@ export default class BuilderView extends Vue {
       case TxTypes.Redeploy:
         this.action = 'redeploy'
         break
+      case TxTypes.MultiCall:
+        this.action = 'multicall'
+        break
       case TxTypes.Governance:
       // TODO: more fine-grained action
     }

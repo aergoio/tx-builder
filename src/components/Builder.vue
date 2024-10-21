@@ -451,6 +451,8 @@ async function requestSendTx(data) {
   return result.hash
 }
 
+/** The previous code that used to compile with luac
+  
 async function fetchCompile(source: string) {
   const result = await fetch('https://luac.aergo.io/compile', {
     method: 'POST',
@@ -458,6 +460,8 @@ async function fetchCompile(source: string) {
   }).then((response) => response.text())
   return result.replace('result:', '').trim()
 }
+  
+ */
 
 @Component({
   components: {
@@ -899,10 +903,16 @@ export default class BuilderView extends Vue {
           try {
             this.remoteCompile.loading = true
             this.remoteCompile.error = this.remoteCompile.result = this.contractDeployPayload = null
-            this.remoteCompile.result = await ensureDelay(
+
+            const contractSourceCode = e.target.result as string
+            this.contractDeployPayload = contractSourceCode
+
+            /** The previous code that used to compile with luac
+             this.remoteCompile.result = await ensureDelay(
               fetchCompile(`${e.target.result}`)
             )
             this.contractDeployPayload = this.remoteCompile.result
+             */
           } catch (err) {
             // err doesn't contain any useful info
             console.error(err)

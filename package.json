@@ -17,8 +17,8 @@
   "author": "Paul Grau <paul@blocko.io>",
   "license": "ISC",
   "dependencies": {
-    "@herajs/client": "^2.0.1",
-    "@herajs/common": "^2.0.1",
+    "@herajs/client": "^2.1.1",
+    "@herajs/common": "^2.1.1",
     "monaco-editor": "^0.20.0",
     "timed-async": "^1.0.0",
     "vue": "^2.6.12",

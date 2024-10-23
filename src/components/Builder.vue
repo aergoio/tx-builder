@@ -451,18 +451,6 @@ async function requestSendTx(data) {
   return result.hash
 }
 
-/** The previous code that used to compile with luac
-  
-async function fetchCompile(source: string) {
-  const result = await fetch('https://luac.aergo.io/compile', {
-    method: 'POST',
-    body: encodeBuffer(Buffer.from(source), 'base64'),
-  }).then((response) => response.text())
-  return result.replace('result:', '').trim()
-}
-  
- */
-
 @Component({
   components: {
     JsonView,
@@ -906,7 +894,6 @@ export default class BuilderView extends Vue {
 
             const contractSourceCode = e.target.result as string
             this.contractDeployPayload = contractSourceCode
-
           } catch (err) {
             // err doesn't contain any useful info
             console.error(err)

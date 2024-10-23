@@ -907,12 +907,6 @@ export default class BuilderView extends Vue {
             const contractSourceCode = e.target.result as string
             this.contractDeployPayload = contractSourceCode
 
-            /** The previous code that used to compile with luac
-             this.remoteCompile.result = await ensureDelay(
-              fetchCompile(`${e.target.result}`)
-            )
-            this.contractDeployPayload = this.remoteCompile.result
-             */
           } catch (err) {
             // err doesn't contain any useful info
             console.error(err)
@@ -925,16 +919,6 @@ export default class BuilderView extends Vue {
         }
         this.deployConstructorAbi = null
         if (!this.contractDeployPayload) return
-        const text = encodeBuffer(
-          decodeToBytes(this.contractDeployPayload, 'base58'),
-          'ascii'
-        )
-        const match = text.match(
-          new RegExp(/({"name":"constructor","arguments":\[.*?\]})/)
-        )
-        if (match) {
-          this.deployConstructorAbi = JSON.parse(match[1])
-        }
       }
     }
     reader.readAsText(file)

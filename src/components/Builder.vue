@@ -142,10 +142,10 @@
 
         <fieldset v-if="action === 'voteDAO'">
           <h3>Vote ID</h3>
-          <select v-model="vote.name" class="text-input" style="height: 30px;">
-            <option v-for="voteId in voteDAOKeys" :value="voteId">{{
-              voteId
-            }}</option>
+          <select v-model="vote.name" class="text-input" style="height: 30px">
+            <option v-for="voteId in voteDAOKeys" :value="voteId">
+              {{ voteId }}
+            </option>
           </select>
           <h3>List of candidates (comma separated)</h3>
           <input
@@ -181,8 +181,8 @@
         <fieldset
           v-if="
             action === 'appendConfig' ||
-              action === 'removeConfig' ||
-              action === 'enableConfig'
+            action === 'removeConfig' ||
+            action === 'enableConfig'
           "
         >
           <div style="margin-bottom: 15px">
@@ -190,13 +190,14 @@
             <select
               v-model="raft.configName"
               class="text-input"
-              style="height: 30px;"
+              style="height: 30px"
             >
               <option
                 v-for="configKey in ['p2pwhite', 'accountwhite']"
                 :value="configKey"
-                >{{ configKey }}</option
               >
+                {{ configKey }}
+              </option>
             </select>
           </div>
           <div v-if="action === 'enableConfig'">
@@ -204,11 +205,11 @@
             <select
               v-model="raft.jsonArg"
               class="text-input"
-              style="height: 30px;"
+              style="height: 30px"
             >
-              <option v-for="arg in ['true', 'false']" :value="arg">{{
-                arg
-              }}</option>
+              <option v-for="arg in ['true', 'false']" :value="arg">
+                {{ arg }}
+              </option>
             </select>
           </div>
           <div v-else>
@@ -398,7 +399,7 @@ const raftActions = [
   'enableConfig',
 ] as const
 const actions = [...normalActions, ...dposActions, ...raftActions] as const
-type Action = typeof actions[number]
+type Action = (typeof actions)[number]
 
 const voteDaoDefaults = {
   BPCOUNT: '13',
@@ -423,7 +424,7 @@ function aergoConnectCall(action, responseType, d): Promise<any> {
   return new Promise((resolve, reject) => {
     window.addEventListener(
       responseType,
-      function(event) {
+      function (event) {
         if ('error' in event.detail) {
           reject(event.detail.error)
         } else {
@@ -466,7 +467,10 @@ export default class BuilderView extends Vue {
   dposActions = dposActions
   raftActions = raftActions
 
-  txBody = { ...defaultTxBody }
+  txBody = {
+    ...defaultTxBody,
+    chainIdHash: this.$store.state.chainIdHash || '',
+  }
   contractMethod = null
   contractArgs = []
   contractDeployPayload = null
@@ -504,6 +508,12 @@ export default class BuilderView extends Vue {
 
   updateTxBody(change) {
     this.txBody = { ...this.txBody, ...change }
+    console.log(this.txBody)
+  }
+
+  @Watch('chainIdHash', { immediate: true })
+  chainIdHashChanged() {
+    this.updateTxBody({ chainIdHash: this.$store.state.chainIdHash })
   }
 
   @Watch('txBody.amount')
@@ -672,6 +682,7 @@ export default class BuilderView extends Vue {
 
   @Watch('action')
   actionChanged(action: Action) {
+    console.log(this.$store.state, 'store')
     if (
       action !== 'nameCreate' &&
       action !== 'nameUpdate' &&
@@ -711,8 +722,8 @@ export default class BuilderView extends Vue {
       })
       this.updateNameTxPayload()
     } else if (
-      dposActions.indexOf(action as typeof dposActions[number]) !== -1 ||
-      raftActions.indexOf(action as typeof raftActions[number]) !== -1
+      dposActions.indexOf(action as (typeof dposActions)[number]) !== -1 ||
+      raftActions.indexOf(action as (typeof raftActions)[number]) !== -1
     ) {
       let payload_json
       if (action === 'stake') {
@@ -733,7 +744,7 @@ export default class BuilderView extends Vue {
         payload: undefined,
         payload_json,
       })
-      if (raftActions.indexOf(action as typeof raftActions[number]) !== -1) {
+      if (raftActions.indexOf(action as (typeof raftActions)[number]) !== -1) {
         this.updateTxBody({ to: 'aergo.enterprise' })
         this.updateRaftPayload()
         if (!this.raft.configName) this.raft.configName = 'p2pwhite'
@@ -809,13 +820,11 @@ export default class BuilderView extends Vue {
   chainInfoChanged() {
     // Set DAO defaults to current values from chainInfo
     this.voteDAODefaults.BPCOUNT = `${this.chainInfo.bpnumber}`
-    this.voteDAODefaults.STAKINGMIN = this.chainInfo.stakingminimum.formatNumber(
-      'aer'
-    )
+    this.voteDAODefaults.STAKINGMIN =
+      this.chainInfo.stakingminimum.formatNumber('aer')
     this.voteDAODefaults.GASPRICE = this.chainInfo.gasprice.formatNumber('aer')
-    this.voteDAODefaults.NAMEPRICE = this.chainInfo.nameprice.formatNumber(
-      'aer'
-    )
+    this.voteDAODefaults.NAMEPRICE =
+      this.chainInfo.nameprice.formatNumber('aer')
   }
 
   get namePrice() {
@@ -890,7 +899,10 @@ export default class BuilderView extends Vue {
         if (extension === 'lua') {
           try {
             this.remoteCompile.loading = true
-            this.remoteCompile.error = this.remoteCompile.result = this.contractDeployPayload = null
+            this.remoteCompile.error =
+              this.remoteCompile.result =
+              this.contractDeployPayload =
+                null
 
             const contractSourceCode = e.target.result as string
             this.contractDeployPayload = contractSourceCode

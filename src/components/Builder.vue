@@ -119,6 +119,26 @@
           </div>
         </fieldset>
 
+        <fieldset v-if="action === 'multicall'">
+          <h3>Multi Call Actions</h3>
+          <textarea
+            class="text-input"
+            rows="5"
+            placeholder='[["call","<address>","function","arg"],["assert","%last result%",">=","250"]]'
+            v-model="multicallInput"
+            @input="updateMultiCallPayload"
+          ></textarea>
+          <span>
+            <Icon
+              :size="16"
+              :name="multicallValid ? 'checkmark-circle' : 'danger-circle'"
+            ></Icon>
+            <span v-if="!multicallValid" class="note"
+              >Enter valid JSON array</span
+            >
+          </span>
+        </fieldset>
+
         <fieldset v-if="action === 'nameCreate'">
           <h3>Name</h3>
           <input class="text-input" type="text" required v-model="name.name" />
@@ -506,6 +526,9 @@ export default class BuilderView extends Vue {
 
   receiptResultStatus = 'json'
 
+  multicallInput = ''
+  multicallValid = true
+
   updateTxBody(change) {
     this.txBody = { ...this.txBody, ...change }
     console.log(this.txBody)
@@ -582,6 +605,19 @@ export default class BuilderView extends Vue {
           Args: [this.name.name, this.name.owner],
         },
       })
+    }
+  }
+
+  updateMultiCallPayload() {
+    try {
+      const parsedJson = JSON.parse(this.multicallInput)
+      if (!Array.isArray(parsedJson)) throw new Error('Invalid format')
+      this.multicallValid = true
+      this.updateTxBody({
+        payload_json: { Args: parsedJson },
+      })
+    } catch (e) {
+      this.multicallValid = false
     }
   }
 

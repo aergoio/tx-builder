@@ -489,7 +489,6 @@ export default class BuilderView extends Vue {
 
   txBody = {
     ...defaultTxBody,
-    chainIdHash: this.$store.state.chainIdHash || '',
   }
   contractMethod = null
   contractArgs = []
@@ -531,12 +530,6 @@ export default class BuilderView extends Vue {
 
   updateTxBody(change) {
     this.txBody = { ...this.txBody, ...change }
-    console.log(this.txBody)
-  }
-
-  @Watch('chainIdHash', { immediate: true })
-  chainIdHashChanged() {
-    this.updateTxBody({ chainIdHash: this.$store.state.chainIdHash })
   }
 
   @Watch('txBody.amount')
@@ -614,7 +607,7 @@ export default class BuilderView extends Vue {
       if (!Array.isArray(parsedJson)) throw new Error('Invalid format')
       this.multicallValid = true
       this.updateTxBody({
-        payload_json: { Args: parsedJson },
+        payload_json: parsedJson,
       })
     } catch (e) {
       this.multicallValid = false
@@ -718,7 +711,6 @@ export default class BuilderView extends Vue {
 
   @Watch('action')
   actionChanged(action: Action) {
-    console.log(this.$store.state, 'store')
     if (
       action !== 'nameCreate' &&
       action !== 'nameUpdate' &&
@@ -999,7 +991,7 @@ export default class BuilderView extends Vue {
       })
       this.receiptStatus = 'loaded'
     } catch (e) {
-      console.log(e)
+      console.error(e)
       this.receiptStatus = 'error'
     }
   }
